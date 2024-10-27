@@ -2,7 +2,7 @@ import express, { json } from "express";
 import "dotenv/config";
 import Redis from "ioredis";
 import { getProductDetail, getProducts } from "./apis/products.js";
-import { getCachedData } from "./middleware/redisMiddleware.js";
+// import { getCachedData } from "./middleware/redisMiddleware.js";
 
 const app = express();
 
@@ -24,9 +24,32 @@ redis.on("connect", () => {
 // });
 
 //
-app.get("/", (req, res) => {
-  res.send("Hello world");
+// app.get("/", (req, res) => {
+//   res.send("Hello world");
+// });
+
+//rate limiting ( we can create a rate limiter middleware from where we can pass key and time so we can reuse in other controller  )
+app.get("/", async (req, res) => {
+  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const key = `${clientIp}:request_count`;
+  const requestCount = await redis.incr(key); // Increment request count for the IP
+
+  if (requestCount === 1) {
+    await redis.expire(key, 60); // Set key expiration to 60 seconds on first request
+  }
+
+  //time remianing
+  const ttl = await redis.ttl(key);
+
+  if (requestCount > 10) {
+    return res
+      .status(429)
+      .send(`Too many requests, Please try again after ${ttl}`);
+  }
+
+  res.send(`Hello World! Request count: ${requestCount}`);
 });
+
 //
 // app.get("/products", async (req, res) => {
 //   let products = await redis.get("products");
