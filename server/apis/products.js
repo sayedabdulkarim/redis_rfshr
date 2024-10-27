@@ -18,7 +18,7 @@ export const getProductDetail = (id) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve({
-        products: [
+        product: [
           {
             id,
             name: `Product ${id}`,

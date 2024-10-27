@@ -37,8 +37,6 @@ app.get("/products", async (req, res) => {
     });
   }
 
-  //
-
   products = await getProducts();
   await redis.set("products", JSON.stringify(products.products));
   res.json({
@@ -48,9 +46,19 @@ app.get("/products", async (req, res) => {
 //
 app.get("/product/:id", async (req, res) => {
   const id = req.params.id;
-  const product = await getProductDetail(id);
+  const key = `product:${id}`;
+  let product = await redis.get(key);
 
-  res.json({ product });
+  if (product) {
+    return res.json({
+      products: JSON.parse(product),
+    });
+  }
+
+  product = await getProductDetail(id);
+  await redis.set(key, JSON.stringify(product.product));
+
+  res.json({ product: product.product });
 });
 
 app.listen(8080, () => console.log("connected to 8080"));
