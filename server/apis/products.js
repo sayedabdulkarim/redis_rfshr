@@ -13,3 +13,19 @@ export const getProducts = () => {
     }, 5000);
   });
 };
+
+export const getProductDetail = (id) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve({
+        products: [
+          {
+            id,
+            name: `Product ${id}`,
+            price: `${id}` * 100,
+          },
+        ],
+      });
+    }, 5000);
+  });
+};

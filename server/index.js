@@ -1,7 +1,7 @@
 import express, { json } from "express";
 import "dotenv/config";
 import Redis from "ioredis";
-import { getProducts } from "./apis/products.js";
+import { getProductDetail, getProducts } from "./apis/products.js";
 
 const app = express();
 
@@ -44,6 +44,13 @@ app.get("/products", async (req, res) => {
   res.json({
     products: products.products,
   });
+});
+//
+app.get("/product/:id", async (req, res) => {
+  const id = req.params.id;
+  const product = await getProductDetail(id);
+
+  res.json({ product });
 });
 
 app.listen(8080, () => console.log("connected to 8080"));
